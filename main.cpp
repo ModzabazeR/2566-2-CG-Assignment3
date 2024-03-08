@@ -82,6 +82,8 @@ void checkKeyboard(glm::vec3 &cameraPosition, glm::vec3 &cameraDirection, glm::v
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     cameraDirection = glm::normalize(direction);
 
+    glm::vec3 oldCameraPosition = cameraPosition;
+
     float speed = 5.0f;
     if (glfwGetKey(mainWindow.getWindow(), GLFW_KEY_W) == GLFW_PRESS) {
         cameraPosition += (cameraDirection * deltaTime * speed);
@@ -100,6 +102,13 @@ void checkKeyboard(glm::vec3 &cameraPosition, glm::vec3 &cameraDirection, glm::v
     }
     if (glfwGetKey(mainWindow.getWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         cameraPosition -= (cameraUp * deltaTime * speed);
+    }
+
+    if (cameraPosition != oldCameraPosition) {
+        // print camera position rounded to 2 decimal places
+        std::cout << std::fixed;
+        std::cout.precision(2);
+        std::cout << "Camera position: " << cameraPosition.x << ", " << cameraPosition.y << ", " << cameraPosition.z << std::endl;
     }
 }
 
@@ -138,10 +147,10 @@ unsigned int loadTexture(char const *path, bool isFlipped = true) {
     return textureID;
 }
 
-void loadModel(char const *modelPath, char const *texturePath, glm::vec3 position, float scale = 1.0f) {
+void loadModel(char const *modelPath, char const *texturePath, glm::vec3 position, float scale = 1.0f, bool flipTexture = true) {
     std::cout << "========================================" << std::endl;
     CreateOBJ(modelPath);
-    modelTextures.push_back(loadTexture(texturePath));
+    modelTextures.push_back(loadTexture(texturePath, flipTexture));
     modelPositions.push_back(position);
     modelScales.push_back(scale);
     std::cout << "========================================" << std::endl;
@@ -155,6 +164,9 @@ int main() {
     loadModel("Models/shiba.obj", "Textures/shiba.png", glm::vec3(1.0f, 1.8f, 0.5f), 50.0f);
     loadModel("Models/TheCat.obj", "Textures/TheCat.png", glm::vec3(-2.3f, 0.5f, -1.0f), 0.02f);
     loadModel("Models/CatPlushie.obj", "Textures/CatPlushie.png", glm::vec3(3.7f, 1.3f, 4.0f), 8.0f);
+    loadModel("Models/CatBanana.obj", "Textures/CatBanana.png", glm::vec3(-0.8f, -0.9f, 2.0f), 0.8f);
+    loadModel("Models/deal-with-it-doge.obj", "Textures/deal-with-it-doge.png", glm::vec3(-3.3f, 1.4f, 14.0f), 20.0f);
+    loadModel("Models/SaulGoodman.obj", "Textures/SaulGoodman.png", glm::vec3(-2.4f, -0.25f, 16.5f), 0.02f);
     CreateShaders();
 
     GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0;
@@ -210,6 +222,10 @@ int main() {
                 float jumpSpeed = 10.0f;
                 float jump = sin(currentFrame * jumpSpeed) * jumpHeight;
                 model = glm::translate(model, glm::vec3(0.0f, jump, 0.0f));
+            } else if (i == 5) {
+                model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            } else if (i == 6) {
+                model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             }
 
             glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
