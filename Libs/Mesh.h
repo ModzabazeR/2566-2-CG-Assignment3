@@ -14,6 +14,7 @@
 
 #include <string>
 #include <string.h>
+#include <unordered_map>
 
 struct Face {
     int vIndex[3], vtIndex[3], vnIndex[3];

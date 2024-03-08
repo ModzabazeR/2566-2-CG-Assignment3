@@ -20,6 +20,9 @@ const GLint WIDTH = 800, HEIGHT = 600;
 Window mainWindow;
 std::vector<Mesh *> meshList;
 std::vector<Shader> shaderList;
+std::vector<glm::vec3> modelPositions;
+std::vector<unsigned int> modelTextures;
+std::vector<float> modelScales;
 
 float yaw = -90.0f, pitch = 0.0f;
 float deltaTime, lastFrame;
@@ -33,7 +36,7 @@ static const char *fShader = "Shaders/shader.frag";
 
 void CreateOBJ(char const *path) {
     Mesh *obj1 = new Mesh();
-    std::cout << "Creating model " << path << std::endl;
+    std::cout << "Loading model " << path << std::endl;
     bool loaded = obj1->CreateMeshFromOBJ(path);
     if (loaded) {
         meshList.push_back(obj1);
@@ -103,6 +106,7 @@ void checkKeyboard(glm::vec3 &cameraPosition, glm::vec3 &cameraDirection, glm::v
 unsigned int loadTexture(char const *path, bool isFlipped = true) {
     unsigned int textureID;
     glGenTextures(1, &textureID);
+    std::cout << "Loading texture " << path << std::endl;
 
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(isFlipped);
@@ -124,6 +128,8 @@ unsigned int loadTexture(char const *path, bool isFlipped = true) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        std::cout << "Texture loaded" << std::endl;
     } else {
         std::cout << "Failed to load " << path << std::endl;
     }
@@ -132,14 +138,23 @@ unsigned int loadTexture(char const *path, bool isFlipped = true) {
     return textureID;
 }
 
+void loadModel(char const *modelPath, char const *texturePath, glm::vec3 position, float scale = 1.0f) {
+    std::cout << "========================================" << std::endl;
+    CreateOBJ(modelPath);
+    modelTextures.push_back(loadTexture(texturePath));
+    modelPositions.push_back(position);
+    modelScales.push_back(scale);
+    std::cout << "========================================" << std::endl;
+}
+
 int main() {
     mainWindow = Window(WIDTH, HEIGHT, 3, 3); // 3 คือ OpenGL version 3.3
     mainWindow.initialise();
 
-    CreateOBJ("Models/anime-school.obj");
-    CreateOBJ("Models/shiba.obj");
-    CreateOBJ("Models/TheCat.obj");
-    CreateOBJ("Models/CatPlushie.obj");
+    loadModel("Models/anime-school.obj", "Textures/bg.jpg", glm::vec3(0.0f));
+    loadModel("Models/shiba.obj", "Textures/shiba.png", glm::vec3(1.0f, 1.8f, 0.5f), 50.0f);
+    loadModel("Models/TheCat.obj", "Textures/TheCat.png", glm::vec3(-2.3f, 0.5f, -1.0f), 0.02f);
+    loadModel("Models/CatPlushie.obj", "Textures/CatPlushie.png", glm::vec3(3.7f, 1.3f, 4.0f), 8.0f);
     CreateShaders();
 
     GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0;
@@ -155,20 +170,6 @@ int main() {
     glm::mat4 projection = glm::perspective(
         45.0f, (GLfloat) mainWindow.getBufferWidth() / (GLfloat) mainWindow.getBufferHeight(), 0.1f, 500.0f);
     // glm::mat4 projection = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, 0.1f, 100.0f);
-
-    glm::vec3 modelPositions[] = {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(1.0f, 1.8f, 0.5f),
-        glm::vec3(-2.3f, 0.5f, -1.0f),
-        glm::vec3(3.7f, 1.3f, 4.0f),
-    };
-
-    unsigned int modelTextures[] = {
-        loadTexture("Textures/bg.jpg"),
-        loadTexture("Textures/shiba.png"),
-        loadTexture("Textures/TheCat.png"),
-        loadTexture("Textures/CatPlushie.png"),
-    };
 
     //Loop until window closed
     while (!mainWindow.getShouldClose()) {
@@ -189,19 +190,7 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 view(1.0f);
-
-        glm::mat4 cameraRotateMat(1.0f);
-        cameraRotateMat[0] = glm::vec4(cameraRight.x, cameraUp.x, -cameraDirection.x, 0.0f);
-        cameraRotateMat[1] = glm::vec4(cameraRight.y, cameraUp.y, -cameraDirection.y, 0.0f);
-        cameraRotateMat[2] = glm::vec4(cameraRight.z, cameraUp.z, -cameraDirection.z, 0.0f);
-
-        glm::mat4 cameraPosMat(1.0f);
-        cameraPosMat[3][0] = -cameraPosition.x;
-        cameraPosMat[3][1] = -cameraPosition.y;
-        cameraPosMat[3][2] = -cameraPosition.z;
-
-        view = cameraRotateMat * cameraPosMat;
+        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
 
         //draw here
         shaderList[0].UseShader();
@@ -213,17 +202,15 @@ int main() {
         for (int i = 0; i < meshList.size(); i++) {
             glm::mat4 model(1.0f);
             model = glm::translate(model, modelPositions[i]);
+            model = glm::scale(model, glm::vec3(modelScales[i]));
 
-            float modelScale = 1.0f;
-
-            if (i == 1) {
-                modelScale = 50.0f; // shiba
-            } else if (i == 2) {
-                modelScale = 0.02f; // TheCat
-            } else if (i == 3) {
-                modelScale = 8.0f; // CatPlushie
+            if (i == 2) {
+                // jump animation for TheCat
+                float jumpHeight = 8.0f;
+                float jumpSpeed = 10.0f;
+                float jump = sin(currentFrame * jumpSpeed) * jumpHeight;
+                model = glm::translate(model, glm::vec3(0.0f, jump, 0.0f));
             }
-            model = glm::scale(model, glm::vec3(modelScale, modelScale, modelScale));
 
             glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
@@ -232,7 +219,6 @@ int main() {
             glBindTexture(GL_TEXTURE_2D, modelTextures[i]);
             meshList[i]->RenderMesh();
         }
-
 
         // light
         glUniform3fv(shaderList[0].GetUniformLocation("lightColour"), 1, (GLfloat *) &lightColour);
