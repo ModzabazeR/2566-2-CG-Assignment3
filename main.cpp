@@ -148,7 +148,7 @@ void loadModel(char const *modelPath, char const *texturePath, glm::vec3 positio
 }
 
 int main() {
-    mainWindow = Window(WIDTH, HEIGHT, 3, 3); // 3 คือ OpenGL version 3.3
+    mainWindow = Window(WIDTH, HEIGHT, 3, 3, "My Precious Moment");
     mainWindow.initialise();
 
     loadModel("Models/anime-school.obj", "Textures/bg.jpg", glm::vec3(0.0f));

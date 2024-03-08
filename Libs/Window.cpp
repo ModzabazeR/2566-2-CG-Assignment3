@@ -16,6 +16,15 @@ Window::Window(GLint windowWidth, GLint windowHeight, GLint majorVersion, GLint 
     glfwMinorVersion = minorVersion;
 }
 
+Window::Window(GLint windowWidth, GLint windowHeight, GLint majorVersion, GLint minorVersion, char const *title)
+{
+    width = windowWidth;
+    height = windowHeight;
+    glfwMajorVersion = majorVersion;
+    glfwMinorVersion = minorVersion;
+    this->title = title;
+}
+
 Window::~Window()
 {
     glfwDestroyWindow(mainWindow);
@@ -43,7 +52,7 @@ int Window::initialise()
     //Allow forward compatibility
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    mainWindow = glfwCreateWindow(width, height, "Test Window", NULL, NULL);
+    mainWindow = glfwCreateWindow(width, height, (this->title) ? this->title : "Test Window", NULL, NULL);
 
     if (!mainWindow)
     {

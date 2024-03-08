@@ -10,6 +10,7 @@ class Window
     public:
         Window();
         Window(GLint windowWidth, GLint windowHeight, GLint majorVersion, GLint minorVersion);
+        Window(GLint windowWidth, GLint windowHeight, GLint majorVersion, GLint minorVersion, char const *title);
         ~Window();
 
         int initialise();
@@ -29,6 +30,7 @@ class Window
         GLint glfwMajorVersion, glfwMinorVersion;
         GLint width, height;
         GLint bufferWidth, bufferHeight;
+        char const *title;
 };
 
 #endif
