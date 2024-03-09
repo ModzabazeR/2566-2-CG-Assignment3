@@ -167,6 +167,8 @@ int main() {
     loadModel("Models/CatBanana.obj", "Textures/CatBanana.png", glm::vec3(-0.8f, -0.9f, 2.0f), 0.8f);
     loadModel("Models/deal-with-it-doge.obj", "Textures/deal-with-it-doge.png", glm::vec3(-3.3f, 1.4f, 14.0f), 20.0f);
     loadModel("Models/SaulGoodman.obj", "Textures/SaulGoodman.png", glm::vec3(-2.4f, -0.25f, 16.5f), 0.02f);
+    loadModel("Models/merry.obj", "Textures/merry.png", glm::vec3(11.0f, 3.3f, 10.5f));
+    loadModel("Models/ace.obj", "Textures/ace.png", glm::vec3(6.5f, 1.0f, 1.4f), 22.0f);
     CreateShaders();
 
     GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0;
@@ -226,6 +228,8 @@ int main() {
                 model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             } else if (i == 6) {
                 model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            } else if (i == 8) {
+                model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
             }
 
             glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
