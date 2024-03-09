@@ -160,7 +160,7 @@ int main() {
     mainWindow = Window(WIDTH, HEIGHT, 3, 3, "My Precious Moment");
     mainWindow.initialise();
 
-    loadModel("Models/anime-school.obj", "Textures/bg.jpg", glm::vec3(0.0f));
+    loadModel("Models/anime-school.obj", "Textures/anime-school/bg.jpg", glm::vec3(0.0f));
     loadModel("Models/shiba.obj", "Textures/shiba.png", glm::vec3(1.0f, 1.8f, 0.5f), 50.0f);
     loadModel("Models/TheCat.obj", "Textures/TheCat.png", glm::vec3(-2.3f, 0.5f, -1.0f), 0.02f);
     loadModel("Models/CatPlushie.obj", "Textures/CatPlushie.png", glm::vec3(3.7f, 1.3f, 4.0f), 8.0f);

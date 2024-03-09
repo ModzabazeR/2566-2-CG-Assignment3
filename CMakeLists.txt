@@ -36,15 +36,19 @@ foreach(SHADER ${SHADERS})
             $<TARGET_FILE_DIR:CG-Assignment3>/Shaders/${SHADER_NAME})
 endforeach()
 
-# Copy textures to build directory
-file(GLOB TEXTURES "Textures/*")
+# Copy textures to build directory including subdirectories while maintain the folder structure
+file(GLOB_RECURSE TEXTURES "Textures/*")
 foreach(TEXTURE ${TEXTURES})
-    get_filename_component(TEXTURE_NAME ${TEXTURE} NAME)
+    file(RELATIVE_PATH TEXTURE_REL_PATH ${CMAKE_SOURCE_DIR}/Textures ${TEXTURE})
+    get_filename_component(TEXTURE_DIR ${TEXTURE_REL_PATH} DIRECTORY)
+    add_custom_command(TARGET CG-Assignment3 POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+            $<TARGET_FILE_DIR:CG-Assignment3>/Textures/${TEXTURE_DIR})
     add_custom_command(TARGET CG-Assignment3 POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_SOURCE_DIR}/Textures/${TEXTURE_NAME}
-            $<TARGET_FILE_DIR:CG-Assignment3>/Textures/${TEXTURE_NAME})
-endforeach()
+            ${TEXTURE}
+            $<TARGET_FILE_DIR:CG-Assignment3>/Textures/${TEXTURE_REL_PATH})
+endforeach ()
 
 # Copy models to build directory
 file(GLOB MODELS "Models/*")
