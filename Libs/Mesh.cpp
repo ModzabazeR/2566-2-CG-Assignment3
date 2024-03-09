@@ -8,6 +8,7 @@ Mesh::Mesh() {
     uvBuffer = 0;
     normalBuffer = 0;
     indexCount = 0;
+    useMTL = false;
 }
 
 Mesh::~Mesh() {
@@ -42,7 +43,18 @@ void Mesh::RenderMesh() {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+    if (useMTL) {
+        int faceCount = 0;
+        std::cout << "Rendering " << faces.size() << " faces" << std::endl;
+        for (Face face : faces) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, face.material.textureID);
+            glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+            std::cout << "Progress: " << ++faceCount << "/" << faces.size() << "\n";
+        }
+    } else {
+        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+    }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -77,21 +89,22 @@ void Mesh::ClearMesh() {
     indexCount = 0;
 }
 
-bool Mesh::CreateMeshFromOBJ(const char *path) {
+bool Mesh::CreateMeshFromOBJ(const char *path, bool withMTL) {
     std::vector<glm::vec3> tempVertices;
     std::vector<glm::vec2> tempTexCoords;
     std::vector<glm::vec3> tempNormals;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> texCoords;
     std::vector<glm::vec3> normals;
-    std::vector<Face> faces;
+
+    useMTL = withMTL;
 
     std::ifstream file(path);
     if (!file.is_open()) {
         std::cerr << "Error: could not open " << path << std::endl;
         return false;
     }
-    std::string line;
+    std::string line, currentMaterial;
     while (std::getline(file, line)) {
         if (line.substr(0, 2) == "v ") {
             glm::vec3 vertex;
@@ -107,9 +120,23 @@ bool Mesh::CreateMeshFromOBJ(const char *path) {
             tempNormals.push_back(normal);
         } else if (line.substr(0, 2) == "f ") {
             Face face;
+            if (useMTL) {
+                face.material = materials[currentMaterial];
+            }
             sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d", &face.vIndex[0], &face.vtIndex[0], &face.vnIndex[0],
                      &face.vIndex[1], &face.vtIndex[1], &face.vnIndex[1], &face.vIndex[2], &face.vtIndex[2], &face.vnIndex[2]);
             faces.push_back(face);
+        } else if (useMTL && line.substr(0, 7) == "mtllib ") {
+            char mtlpath[101];
+            sscanf(line.c_str(), "mtllib %100s", mtlpath);
+            materials = loadMTL(mtlpath);
+            for (auto const &pair : materials) {
+                std::cout << "{" << pair.first << ": " << pair.second.toString() << "}\n";
+            }
+        } else if (useMTL && line.substr(0, 7) == "usemtl ") {
+            char tmp[101];
+            sscanf(line.c_str(), "usemtl %100s", tmp);
+            currentMaterial = tmp;
         }
     }
     file.close();
@@ -187,6 +214,6 @@ bool Mesh::CreateMeshFromOBJ(const char *path) {
     return true;
 }
 
-bool Mesh::CreateMeshFromOBJ(const char *path, const std::vector<std::string>& texturePaths) {
-    return false;
+std::unordered_map<std::string, Material> Mesh::getMaterials() {
+    return materials;
 }

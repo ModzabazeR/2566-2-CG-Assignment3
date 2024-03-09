@@ -34,10 +34,10 @@ static const char *vShader = "Shaders/shader.vert";
 //Fragment Shader
 static const char *fShader = "Shaders/shader.frag";
 
-void CreateOBJ(char const *path) {
+void CreateOBJ(char const *path, bool withMTL) {
     Mesh *obj1 = new Mesh();
     std::cout << "Loading model " << path << std::endl;
-    bool loaded = obj1->CreateMeshFromOBJ(path);
+    bool loaded = obj1->CreateMeshFromOBJ(path, withMTL);
     if (loaded) {
         meshList.push_back(obj1);
         std::cout << "Model loaded" << std::endl;
@@ -149,8 +149,12 @@ unsigned int loadTexture(char const *path, bool isFlipped = true) {
 
 void loadModel(char const *modelPath, char const *texturePath, glm::vec3 position, float scale = 1.0f, bool flipTexture = true) {
     std::cout << "========================================" << std::endl;
-    CreateOBJ(modelPath);
-    modelTextures.push_back(loadTexture(texturePath, flipTexture));
+    CreateOBJ(modelPath, (texturePath == nullptr));
+    if (texturePath != nullptr) {
+        modelTextures.push_back(loadTexture(texturePath, flipTexture));
+    } else {
+        modelTextures.push_back(-1);
+    }
     modelPositions.push_back(position);
     modelScales.push_back(scale);
     std::cout << "========================================" << std::endl;
@@ -160,7 +164,7 @@ int main() {
     mainWindow = Window(WIDTH, HEIGHT, 3, 3, "My Precious Moment");
     mainWindow.initialise();
 
-    loadModel("Models/anime-school.obj", "Textures/anime-school/bg.jpg", glm::vec3(0.0f));
+    loadModel("Models/anime-school.obj", nullptr, glm::vec3(0.0f));
     loadModel("Models/shiba.obj", "Textures/shiba.png", glm::vec3(1.0f, 1.8f, 0.5f), 50.0f);
     loadModel("Models/TheCat.obj", "Textures/TheCat.png", glm::vec3(-2.3f, 0.5f, -1.0f), 0.02f);
     loadModel("Models/CatPlushie.obj", "Textures/CatPlushie.png", glm::vec3(3.7f, 1.3f, 4.0f), 8.0f);
@@ -231,8 +235,12 @@ int main() {
             glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
             glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(view));
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, modelTextures[i]);
+
+            if (meshList[i]->getMaterials().empty()) {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, modelTextures[i]);
+            }
+
             meshList[i]->RenderMesh();
         }
 
