@@ -10,6 +10,7 @@ set(SOURCE_FILES
         Libs/Shader.cpp
         Libs/Window.cpp
         Libs/stb_image.cpp
+        Libs/Model.h
 )
 
 # Add the executable

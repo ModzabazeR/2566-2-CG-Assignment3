@@ -10,6 +10,7 @@
 #include "Libs/Window.h"
 #include "Libs/Mesh.h"
 #include "Libs/stb_image.h"
+#include "Libs/Model.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,6 +21,8 @@ const GLint WIDTH = 800, HEIGHT = 600;
 Window mainWindow;
 std::vector<Mesh *> meshList;
 std::vector<Shader> shaderList;
+
+std::vector<Model> models;
 std::vector<glm::vec3> modelPositions;
 std::vector<unsigned int> modelTextures;
 std::vector<float> modelScales;
@@ -147,12 +150,12 @@ unsigned int loadTexture(char const *path, bool isFlipped = true) {
     return textureID;
 }
 
-void loadModel(char const *modelPath, char const *texturePath, glm::vec3 position, float scale = 1.0f, bool flipTexture = true) {
+void loadModel(const Model& model) {
     std::cout << "========================================" << std::endl;
-    CreateOBJ(modelPath);
-    modelTextures.push_back(loadTexture(texturePath, flipTexture));
-    modelPositions.push_back(position);
-    modelScales.push_back(scale);
+    CreateOBJ(model.modelPath.c_str());
+    modelTextures.push_back(loadTexture(model.texturePath.c_str(), model.flipTexture));
+    modelPositions.push_back(model.position);
+    modelScales.push_back(model.scale);
     std::cout << "========================================" << std::endl;
 }
 
@@ -160,15 +163,16 @@ int main() {
     mainWindow = Window(WIDTH, HEIGHT, 3, 3, "My Precious Moment");
     mainWindow.initialise();
 
-    loadModel("Models/anime-school.obj", "Textures/anime-school/bg.jpg", glm::vec3(0.0f));
-    loadModel("Models/shiba.obj", "Textures/shiba.png", glm::vec3(1.0f, 1.8f, 0.5f), 50.0f);
-    loadModel("Models/TheCat.obj", "Textures/TheCat.png", glm::vec3(-2.3f, 0.5f, -1.0f), 0.02f);
-    loadModel("Models/CatPlushie.obj", "Textures/CatPlushie.png", glm::vec3(3.7f, 1.3f, 4.0f), 8.0f);
-    loadModel("Models/CatBanana.obj", "Textures/CatBanana.png", glm::vec3(-0.8f, -0.9f, 2.0f), 0.8f);
-    loadModel("Models/deal-with-it-doge.obj", "Textures/deal-with-it-doge.png", glm::vec3(-3.3f, 1.4f, 14.0f), 20.0f);
-    loadModel("Models/SaulGoodman.obj", "Textures/SaulGoodman.png", glm::vec3(-2.4f, -0.25f, 16.5f), 0.02f);
-    loadModel("Models/merry.obj", "Textures/merry.png", glm::vec3(11.0f, 3.3f, 10.5f));
-    loadModel("Models/ace.obj", "Textures/ace.png", glm::vec3(6.5f, 1.0f, 1.4f), 22.0f);
+    models.push_back({"Models/anime-school.obj", "Textures/anime-school/bg.jpg", glm::vec3(0.0f)});
+    models.push_back({"Models/shiba.obj", "Textures/shiba.png", glm::vec3(1.0f, 1.8f, 0.5f), 50.0f});
+    models.push_back({"Models/TheCat.obj", "Textures/TheCat.png", glm::vec3(-2.3f, 0.5f, -1.0f), 0.02f});
+    models.push_back({"Models/CatPlushie.obj", "Textures/CatPlushie.png", glm::vec3(3.7f, 1.3f, 4.0f), 8.0f});
+    models.push_back({"Models/CatBanana.obj", "Textures/CatBanana.png", glm::vec3(-0.8f, -0.9f, 2.0f), 0.8f});
+    models.push_back({"Models/deal-with-it-doge.obj", "Textures/deal-with-it-doge.png", glm::vec3(-3.3f, 1.4f, 14.0f), 20.0f});
+    models.push_back({"Models/SaulGoodman.obj", "Textures/SaulGoodman.png", glm::vec3(-2.4f, -0.25f, 16.5f), 0.02f});
+    models.push_back({"Models/merry.obj", "Textures/merry.png", glm::vec3(11.0f, 3.3f, 10.5f), 1.0f});
+    models.push_back({"Models/ace.obj", "Textures/ace.png", glm::vec3(6.5f, 1.0f, 1.4f), 22.0f});
+
     CreateShaders();
 
     GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0;
@@ -185,6 +189,7 @@ int main() {
         45.0f, (GLfloat) mainWindow.getBufferWidth() / (GLfloat) mainWindow.getBufferHeight(), 0.1f, 500.0f);
     // glm::mat4 projection = glm::ortho(-4.0f, 4.0f, -3.0f, 3.0f, 0.1f, 100.0f);
 
+    int currentModel = 0;
     //Loop until window closed
     while (!mainWindow.getShouldClose()) {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -211,6 +216,12 @@ int main() {
         uniformModel = shaderList[0].GetUniformLocation("model");
         uniformProjection = shaderList[0].GetUniformLocation("projection");
         uniformView = shaderList[0].GetUniformLocation("view");
+
+        // load models incrementally to avoid freezing the window
+        if (currentModel < models.size()) {
+            loadModel(models[currentModel]);
+            currentModel++;
+        }
 
         //Object
         for (int i = 0; i < meshList.size(); i++) {

@@ -30,7 +30,6 @@ class Mesh
         void RenderMesh();
         void ClearMesh();
         bool CreateMeshFromOBJ(const char * path);
-        bool CreateMeshFromOBJ(const char *path, const std::vector<std::string>& texturePaths);
         void CreateMeshWithTexture(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices);
 
     private:

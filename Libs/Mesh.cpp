@@ -186,7 +186,3 @@ bool Mesh::CreateMeshFromOBJ(const char *path) {
 
     return true;
 }
-
-bool Mesh::CreateMeshFromOBJ(const char *path, const std::vector<std::string>& texturePaths) {
-    return false;
-}
