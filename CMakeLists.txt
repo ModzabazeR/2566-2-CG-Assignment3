@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add the source files
 set(SOURCE_FILES
-        main.cpp
+        Assignment3_65050581_65050777.cpp
         Libs/Mesh.cpp
         Libs/Shader.cpp
         Libs/Window.cpp
