@@ -45,4 +45,4 @@ Run the compiled executable to start the program. The camera can be moved using 
 - [TheCat](https://sketchfab.com/3d-models/the-cat-8e1a9b000bf64b3faed962da7062c9dd)
 
 ## Demo Video
-https://github.com/ModzabazeR/2566-2-CG-Assignment3/raw/main/outputs/freecam.mp4
+https://github.com/ModzabazeR/2566-2-CG-Assignment3/assets/46133542/74cae6cd-84d2-4d08-8892-982d9dcc6935
